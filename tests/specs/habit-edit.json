@@ -1,13 +1,13 @@
 [
   {
-    "name": "Edit Habit",
+    "name": "Edit Habit has a helpful empty state",
     "steps": [
       {
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Modify habit schedule or reminder time"
+              "text": "There isn’t a habit to edit yet — tap Add a habit first."
             }
           }
         ],

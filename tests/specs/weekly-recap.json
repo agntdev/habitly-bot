@@ -1,0 +1,11 @@
+[
+  {
+    "name": "weekly recap invites a new user to add a habit",
+    "steps": [
+      {
+        "send": { "callback": "recap:show" },
+        "expect": [{ "method": "editMessageText", "payload": { "text": "Your first weekly recap starts once you’ve added a habit." } }]
+      }
+    ]
+  }
+]

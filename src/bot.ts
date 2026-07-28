@@ -1,15 +1,26 @@
-import { Composer } from "grammy";
+import { Composer, type Bot } from "grammy";
 import { createBot, type BotContext, type CreateBotOptions } from "./toolkit/index.js";
 import type { StorageAdapter } from "grammy";
+import { createHabitStore, type HabitRecord, type HabitStore } from "./habits.js";
+import checkinDone from "./handlers/checkin-done.js";
+import checkinSkip from "./handlers/checkin-skip.js";
+import habitEdit from "./handlers/habit-edit.js";
+import habits from "./handlers/habits.js";
+import help from "./handlers/help.js";
+import newHabit from "./handlers/new.js";
+import start from "./handlers/start.js";
+import weeklyRecap from "./handlers/weekly-recap.js";
 
 // The per-chat session shape (ephemeral conversation state only). Extend as the
 // bot grows. Durable domain data must NOT live here — use the toolkit's
 // persistent storage (see AGENTS.md).
 export interface Session {
-  // example: step?: "awaiting_amount";
+  step?: "timezone" | "title" | "time" | "edit-time";
+  draftTitle?: string;
+  editHabitId?: string;
 }
 
-export type Ctx = BotContext<Session>;
+export type Ctx = BotContext<Session> & { habitStore: HabitStore };
 
 /**
  * BuildBotOptions lets a runtime-specific ENTRY POINT (never a feature handler)
@@ -42,53 +53,24 @@ export interface BuildBotOptions {
  * (src/worker.ts) calls `buildBot(token, { handlers, storage })` with a
  * build-time manifest because Workers has no filesystem.
  */
-export async function buildBot(token: string, opts: BuildBotOptions = {}) {
+export function buildBot(token: string, opts: BuildBotOptions = {}) {
   const bot = createBot<Session>(token, {
     initial: () => ({}),
     storage: opts.storage,
     telemetryEnv: opts.telemetryEnv,
     telemetryReporterOptions: opts.telemetryReporterOptions,
+  }) as unknown as Bot<Ctx>;
+
+  const habitStore = createHabitStore(opts.storage as StorageAdapter<HabitRecord> | undefined);
+  bot.use((ctx, next) => {
+    (ctx as Ctx).habitStore = habitStore;
+    return next();
   });
 
-  const handlers = opts.handlers ?? (await loadHandlersFromDisk());
+  const handlers = opts.handlers ?? [checkinDone, checkinSkip, habitEdit, habits, help, newHabit, start, weeklyRecap];
   for (const h of handlers) bot.use(h);
 
   bot.on("message", (ctx) => ctx.reply("Sorry, I didn't understand that. Try /help."));
 
   return bot;
-}
-
-/**
- * loadHandlersFromDisk — the Node/dev/harness path: scan src/handlers/ and
- * import each Composer. Never CALLED in the Workers bundle (worker.ts always
- * passes an explicit manifest) — and `node:fs` must be imported DYNAMICALLY
- * here, not at the top of the file: Cloudflare validates the bundle's static
- * import graph at upload and rejects any static node:* import, even one whose
- * code never runs.
- */
-async function loadHandlersFromDisk(): Promise<Composer<Ctx>[] > {
-  const { readdirSync } = await import("node:fs");
-  const dir = new URL("./handlers/", import.meta.url);
-  let files: string[] = [];
-  try {
-    files = readdirSync(dir).filter(
-      (f) =>
-        (f.endsWith(".js") || f.endsWith(".ts")) &&
-        !f.endsWith(".d.ts") &&
-        !f.includes(".test.") &&
-        !f.includes(".spec."),
-    );
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-    files = []; // no handlers/ dir yet → nothing to load
-  }
-  const out: Composer<Ctx>[] = [];
-  for (const file of files.sort()) {
-    const mod = (await import(new URL(file, dir).href)) as { default?: Composer<Ctx> };
-    if (!mod.default) {
-      throw new Error(`handler ${file} must default-export a grammY Composer`);
-    }
-    out.push(mod.default);
-  }
-  return out;
 }

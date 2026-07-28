@@ -1,13 +1,13 @@
 [
   {
-    "name": "Skip",
+    "name": "Skip explains when there is no current reminder",
     "steps": [
       {
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Mark current reminder period as skipped"
+              "text": "There’s no active reminder to skip right now."
             }
           }
         ],

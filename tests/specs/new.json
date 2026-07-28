@@ -1,19 +1,36 @@
 [
   {
-    "name": "/new",
+    "name": "adding a habit guides a user through title, schedule, and time",
     "steps": [
       {
         "expect": [
           {
-            "method": "sendMessage",
-            "payload": {
-              "text": "Create a new habit with schedule and reminder time"
-            }
+            "method": "editMessageText"
           }
         ],
         "send": {
-          "text": "/new"
+          "callback": "habit:new"
         }
+      },
+      {
+        "send": { "text": "Read" },
+        "expect": [{ "method": "sendMessage", "payload": { "text": "Choose a rhythm that feels realistic." } }]
+      },
+      {
+        "send": { "callback": "habit:schedule:daily" },
+        "expect": [{ "method": "editMessageText" }]
+      },
+      {
+        "send": { "text": "08:30" },
+        "expect": [{ "method": "sendMessage" }]
+      },
+      {
+        "send": { "callback": "checkin:done:1" },
+        "expect": [{ "method": "sendMessage" }]
+      },
+      {
+        "send": { "callback": "checkin:done:1" },
+        "expect": [{ "method": "sendMessage" }]
       }
     ]
   }

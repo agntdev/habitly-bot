@@ -9,8 +9,9 @@ import { inlineButton, inlineKeyboard } from "../toolkit/index.js";
 const composer = new Composer<Ctx>();
 
 const HELP =
-  "ℹ️ Tap /start to open the menu, then pick what you want from the buttons.\n\n" +
-  "Everything in this bot is reachable by tapping — you don't need to remember any commands.";
+  "Your habits stay private to you.\n\n" +
+  "Tap Add a habit to set a schedule, then use Done or Skip when a reminder arrives.\n\n" +
+  "You can change a habit anytime from My habits.";
 
 const backToMenu = inlineKeyboard([[inlineButton("⬅️ Back to menu", "menu:main")]]);
 
