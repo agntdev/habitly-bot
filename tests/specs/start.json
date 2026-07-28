@@ -1,13 +1,13 @@
 [
   {
-    "name": "/start replies with the welcome + main menu",
+    "name": "/start begins private onboarding",
     "steps": [
       {
         "send": { "text": "/start" },
         "expect": [
           {
             "method": "sendMessage",
-            "payload": { "text": "👋 Welcome! Tap a button below to get started." }
+            "payload": { "text": "Welcome — I’ll keep every habit private to you.\n\nYour time zone is UTC. Is that right?" }
           }
         ]
       }

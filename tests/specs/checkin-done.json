@@ -1,13 +1,13 @@
 [
   {
-    "name": "Done",
+    "name": "Done explains when there is no current reminder",
     "steps": [
       {
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Mark current reminder period as completed"
+              "text": "There’s no active reminder to check in for right now."
             }
           }
         ],

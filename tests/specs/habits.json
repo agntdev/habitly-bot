@@ -1,18 +1,18 @@
 [
   {
-    "name": "/habits",
+    "name": "My habits shows a warm empty state",
     "steps": [
       {
         "expect": [
           {
-            "method": "sendMessage",
+            "method": "editMessageText",
             "payload": {
-              "text": "View all active habits with next reminder and streak stats"
+              "text": "No habits yet — tap Add a habit to begin."
             }
           }
         ],
         "send": {
-          "text": "/habits"
+          "callback": "habits:show"
         }
       }
     ]

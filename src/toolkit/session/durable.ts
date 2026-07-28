@@ -49,6 +49,7 @@ interface Reminder {
   at: number; // epoch ms
   chatId: number | string;
   text: string;
+  replyMarkup?: unknown;
 }
 
 /**
@@ -93,12 +94,13 @@ export async function remindAt(
   chatId: number | string,
   whenEpochMs: number,
   text: string,
+  replyMarkup?: unknown,
 ): Promise<void> {
   try {
     const stub = env.CHAT_DO.get(env.CHAT_DO.idFromName("chat:" + chatId));
     await stub.fetch("https://do/remind", {
       method: "POST",
-      body: JSON.stringify({ at: whenEpochMs, chatId, text } satisfies Reminder),
+      body: JSON.stringify({ at: whenEpochMs, chatId, text, replyMarkup } satisfies Reminder),
     });
   } catch {
     /* best-effort: a reminder we couldn't schedule must not break the reply */
@@ -165,7 +167,7 @@ export class ChatDO {
     const due = list.filter((r) => r.at <= now);
     const rest = list.filter((r) => r.at > now);
     for (const r of due) {
-      await tg(this.env.BOT_TOKEN, "sendMessage", { chat_id: r.chatId, text: r.text });
+      await tg(this.env.BOT_TOKEN, "sendMessage", { chat_id: r.chatId, text: r.text, reply_markup: r.replyMarkup });
     }
     await this.state.storage.put("reminders", rest);
     await this.rearm(rest);
